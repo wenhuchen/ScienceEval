@@ -16,13 +16,13 @@ subject_dict = {
     'physics': ('Physics', 'DPhysics'),
     'chemistry': ('Chemistry', 'EChemistry'),
     'biology': ('Biology', 'FBiology'),
-    'cs': ('ComputerScience', 'GComputerScience')
+    'cs': ('ComputerScience', 'GComputerScience'),
 }
 
 subject, field = subject_dict[args.subject]
 
 # Read the HTML file
-with open(f'/Users/wenhuchen/Documents/Crawler/{subject}/index.html', 'r') as file:
+with open(f'/Users/wenhuchen/Documents/Crawler/{subject}/index.html', 'r', encoding = 'windows-1252') as file:
     html = file.read()
 
 base = f'https://stemez.com/subjects/science/{field}/{field}/{field}/'
@@ -35,7 +35,7 @@ hrefs = [a.get('href') for a in a_tags]
 all_hrefs=  []
 # Print all the href links
 for href in tqdm.tqdm(hrefs):
-    if href and '-Ch' in href:      
+    if href and '-Ch' in href:
         html = urllib.request.urlopen(href)
         soup = BeautifulSoup(html, 'html.parser')
         a_tags = soup.find_all('a')

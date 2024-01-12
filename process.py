@@ -104,8 +104,6 @@ def download_image(html_file, base):
             if image:
                 image = image['src']
                 if '/' in image:
-                    #if os.path.exists(f'images/{image.split("/")[0]}'):
-                    #    shutil.rmtree(f'images/{image.split("/")[0]}')
                     all_mapping[html_file].append(f'images/{image}')
                     if not os.path.exists(f'images/{image.split("/")[0]}'):
                         os.mkdir(f'images/{image.split("/")[0]}')
@@ -114,12 +112,12 @@ def download_image(html_file, base):
 if __name__ == '__main__':
 
     html_files = []
-    for sub in ['physics', 'chemistry', 'biology', 'cs']:
+    for sub in subject_dict:
         subject, field = subject_dict[sub]
         base = f'https://stemez.com/subjects/science/{field}/{field}/{field}/'
 
         # Replace 'example.html' with the path to your HTML file
-        for html_file in tqdm.tqdm(glob.glob(f'/Users/wenhuchen/Documents/Crawler/{subject}/*.htm')):
+        for html_file in tqdm.tqdm(glob.glob(f'{subject}/*.htm')):
             download_image(html_file, base)
             html_files.append((html_file, all_mapping[html_file]))
 
@@ -131,9 +129,6 @@ if __name__ == '__main__':
                 entries.append(entry)
 
     print(len(entries))
-    with open('outputs.jsonl', 'w') as f:
+    with open('science_stemez.jsonl', 'w') as f:
         for line in entries:
             f.write(json.dumps(line) + '\n')
-        #json.dump(entries, f, indent=2)
-
-    # extract_content(('/Users/wenhuchen/Documents/Crawler/Chemistry/E27-0906.htm', {}))

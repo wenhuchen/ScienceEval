@@ -2,3 +2,7 @@
 *.htm
 __pycache/
 *DS_Store
+*.pyc
+*.jpg
+*.gif
+*.png

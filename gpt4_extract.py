@@ -6,30 +6,31 @@ import os
 
 client = OpenAI()
 
-data = []
-with open('outputs.jsonl', 'r') as f:
-    for line in f:
-        data.append(json.loads(line))
-random.shuffle(data)
-print(len(data))
-
-# Decide whether to start from scratch
-count = 0
-if os.path.exists('output_extracted.jsonl'):
-    with open('output_extracted.jsonl') as f:
+if __name__ == "__main__":
+    data = []
+    with open('outputs.jsonl', 'r') as f:
         for line in f:
-            count += 1
-    f = open('output_extracted.jsonl', 'a')
-    print(f'output_extracted.jsonl already exists with {count} lines')
-else:
-    f = open('output_extracted.jsonl', 'w')
+            data.append(json.loads(line))
+    random.shuffle(data)
+    print(len(data))
 
-for i, entry in tqdm.tqdm(enumerate(data)):
-    if i < count:
-        continue
+    # Decide whether to start from scratch
+    count = 0
+    if os.path.exists('output_extracted.jsonl'):
+        with open('output_extracted.jsonl') as f:
+            for line in f:
+                count += 1
+        f = open('output_extracted.jsonl', 'a')
+        print(f'output_extracted.jsonl already exists with {count} lines')
+    else:
+        f = open('output_extracted.jsonl', 'w')
 
-    # Formulate the user request;
-    system_prompt = """
+    for i, entry in tqdm.tqdm(enumerate(data)):
+        if i < count:
+            continue
+
+        # Formulate the user request;
+        system_prompt = """
 You are a helpful assistant to help me analyze a given exam question and solution. There are three things you need to do:
 image_question: decide whether the question requires reading a figure to answer.
 image_answer: decide whether the answer to the question should be a figure instead of text.
@@ -44,35 +45,31 @@ Return your answer in JSON format like:
     "answer": 'a short phrase',
 }
 """
-    user_request = f"""
+        user_request = f"""
 Question: {entry["question"]}
 Solution: {entry["solution"]}
 """
+        # Formulate the response;
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_request}],
+            temperature=0.0,
+        )
+        output = response.choices[0].message.content
+        output = output.replace('true', 'True')
+        output = output.replace('false', 'False')
 
-    # Formulate the response;
-    response = client.chat.completions.create(
-        model="gpt-4",
-        # model="gpt-4-turbo-1106",
-        # model="gpt-3.5-turbo-1106",
-        # response_format={ "type": "json_object" },
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_request}],
-        temperature=0.0,
-    )
-    output = response.choices[0].message.content
-    output = output.replace('true', 'True')
-    output = output.replace('false', 'False')
+        try:
+            answer = eval(output)
+            answer['question'] = entry['question']
+            print(answer)
 
-    try:
-        answer = eval(output)
-        answer['question'] = entry['question']
-        print(answer)
+            entry.update(answer)
 
-        entry.update(answer)
+            f.write(json.dumps(entry) + '\n')
+        except Exception:
+            continue
 
-        f.write(json.dumps(entry) + '\n')
-    except Exception:
-        continue
-
-f.close()
+    f.close()

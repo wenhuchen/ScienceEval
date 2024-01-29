@@ -27,7 +27,7 @@ if __name__ == "__main__":
             if entry['images']:
                 entry['images'] = Image.open(entry['images'][0])
             else:
-                entry['images'] = None #Image.open('images/empty.png')
+                entry['images'] = None
         else:
             entry['images'] = None
 
@@ -42,4 +42,4 @@ if __name__ == "__main__":
     print('before:', len(data), 'after:', len(new_data))
 
     dataset = Dataset.from_list(new_data)
-    dataset.push_to_hub('TIGER-Lab/ScienceEval', split='test')
+    dataset.push_to_hub('TIGER-Lab/ScienceEval', split='math')
